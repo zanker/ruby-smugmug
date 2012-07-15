@@ -1,6 +1,6 @@
 Overview
 ===
-Allows you to read or write data using the SmugMug 1.3.0 API with OAuth.
+Library for interacting with the SmugMug 1.3.0 API using OAuth authentication.
 
 Compability
 -
