@@ -106,18 +106,18 @@ module SmugMug
       # Sort the params
       sorted_args = []
       args.sort.each do |key, value|
-        sorted_args.push("#{key.to_s}=#{URI::encode_www_form_component(value.to_s)}")
+        sorted_args.push("#{key.to_s}=#{CGI::escape(value.to_s)}")
       end
 
       postdata = sorted_args.join("&")
 
       # Final string to hash
-      sig_base = "#{method}&#{URI::encode_www_form_component("#{uri.scheme}://#{uri.host}#{uri.path}")}&#{URI::encode_www_form_component(postdata)}"
+      sig_base = "#{method}&#{CGI::escape("#{uri.scheme}://#{uri.host}#{uri.path}")}&#{CGI::escape(postdata)}"
 
       signature = OpenSSL::HMAC.digest(@digest, "#{@config[:oauth_secret]}&#{@config[:user][:secret]}", sig_base)
       signature = Base64.encode64(signature).chomp
 
-      "#{postdata}&oauth_signature=#{URI::encode_www_form_component(signature)}"
+      "#{postdata}&oauth_signature=#{CGI::escape(signature)}"
     end
   end
 end
