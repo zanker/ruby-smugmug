@@ -2,10 +2,12 @@ require "cgi"
 require "openssl"
 require "base64"
 require "net/http"
+require "json"
 
 module SmugMug
   class HTTP
     API_URI = URI("https://api.smugmug.com/services/api/json/1.3.0")
+    OAUTH_ERRORS = {30 => true, 32 => true, 33 => true, 35 => true, 36 => true, 37 => true, 38 => true, 98 => true}
 
     ##
     # Creates a new HTTP wrapper to handle the network portions of the API requests
@@ -13,8 +15,14 @@ module SmugMug
     #
     def initialize(args)
       @config = args
-      @headers = {"User-Agent" => args.delete(:user_agent) || "Ruby-SmugMug v#{SmugMug::VERSION}"}
       @digest = OpenSSL::Digest::Digest.new("SHA1")
+
+      @headers = {"Accept-Encoding" => "gzip"}
+      if args[:user_agent]
+        @headers["User-Agent"] = "#{args.delete(:user_agent)} (ruby-smugmug v#{SmugMug::VERSION})"
+      else
+        @headers["User-Agent"] = "Ruby-SmugMug v#{SmugMug::VERSION}"
+      end
     end
 
     def request(api, args)
@@ -40,6 +48,36 @@ module SmugMug
       postdata = self.sign_request("POST", API_URI, args)
 
       response = http.request_post(API_URI.request_uri, postdata, @headers)
+      if response.code != "200"
+        raise SmugMug::HTTPError.new("HTTP #{response.code}, #{response.message}", response.code, response.message)
+      end
+
+      # Check for GZIP encoding
+      if response.header["content-encoding"] == "gzip"
+        begin
+          body = Zlib::GzipReader.new(StringIO.new(response.body)).read
+        rescue Zlib::GzipFile::Error
+          raise
+        end
+      else
+        body = response.body
+      end
+
+      body = JSON.parse(body)
+
+      if body["stat"] == "fail"
+        # Special casing for SmugMug being in Read only mode
+        if body["code"] == 99
+          raise SmugMug::ReadonlyMode.new("SmugMug is currently in read only mode, try again later")
+        end
+
+        klass = OAUTH_ERRORS[body["code"]] ? SmugMug::OAuthError : SmugMug::RequestError
+        raise klass.new("Error ##{body["code"]}, #{body["message"]}", body["code"], body["message"])
+      end
+
+      body.delete("stat")
+      body.delete("method")
+      body
     end
 
     ##
@@ -64,6 +102,7 @@ module SmugMug
       args["oauth_signature_method"] = "HMAC-SHA1"
       args["oauth_timestamp"] = Time.now.utc.to_i
       args["oauth_token"] = @config[:user][:token]
+
 
       # Sort the params
       sorted_args = []

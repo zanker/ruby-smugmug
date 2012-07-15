@@ -11,7 +11,7 @@ module SmugMug
   end
 
   ##
-  # 
+  # Errors specific to the OAuth request
   class OAuthError < StandardError
     include ReplyErrors
   end
@@ -23,9 +23,14 @@ module SmugMug
   end
 
   ##
-  # Error with doing that due to permissions (Trying to write with a read only key)
-  class PermissionError < StandardError
+  # Problem with the request
+  class RequestError < StandardError
     include ReplyErrors
 
+  end
+
+  ##
+  # SmugMug is in read-only mode
+  class ReadonlyMode < StandardError
   end
 end
