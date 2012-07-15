@@ -10,12 +10,11 @@ Gem::Specification.new do |s|
   s.homepage    = "http://github.com/zanker/ruby-smugmug"
   s.summary     = "SmugMug 1.3.0 API gem"
   s.description = "Gem for reading and writing data from the SmugMug 1.3.0 API."
-  
+
   s.required_rubygems_version = ">= 1.3.6"
   s.rubyforge_project         = "ruby-smugmug"
 
   s.add_development_dependency "rspec", "~>2.8.0"
-  s.add_development_dependency "guard-rspec", "~>0.6.0"
 
   s.files        = Dir.glob("lib/**/*") + %w[LICENSE README.md CHANGELOG.md Rakefile]
   s.require_path = "lib"
