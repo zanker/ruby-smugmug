@@ -8,8 +8,7 @@ module Support
       res_mock.stub(:header).and_return({})
 
       http_mock = mock("HTTP")
-      http_mock.should_receive(:start).and_yield
-      http_mock.should_receive(:request_get).with(any_args).and_yield(res_mock)
+      http_mock.should_receive(:request_post).with(anything, anything, anything).and_return(res_mock)
 
       Net::HTTP.should_receive(:new).and_return(http_mock)
     end
