@@ -2,7 +2,6 @@ require "cgi"
 require "openssl"
 require "base64"
 require "net/http"
-require "json"
 
 module SmugMug
   class HTTP
