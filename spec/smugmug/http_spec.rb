@@ -3,6 +3,55 @@ require "spec_helper"
 describe SmugMug::HTTP do
   include Support::ResponseMock
 
+  it "unzips gzipped responses" do
+    mock_response(SmugMugResponses::SUCCESS)
+
+    http = SmugMug::HTTP.new(:api_key => "1234-api", :oauth_secret => "4321-secret", :user => {:token => "abcd-token", :secret => "abcd-secret"})
+
+    data = http.request("users.getInfo", {})
+    data.should be_a_kind_of(Hash)
+    data["User"].should == JSON.parse(SmugMugResponses::SUCCESS)["User"]
+  end
+
+  it "unzips gzipped responses" do
+    output = StringIO.new
+    gz = Zlib::GzipWriter.new(output)
+    gz.write(SmugMugResponses::SUCCESS)
+    gz.close
+
+    res_mock = mock("Response")
+    res_mock.stub(:body).and_return(output.string)
+    res_mock.stub(:code).and_return("200")
+    res_mock.stub(:message).and_return("OK")
+    res_mock.stub(:header).and_return({"content-encoding" => "gzip"})
+
+    http_mock = mock("HTTP")
+    http_mock.should_receive(:use_ssl=).with(true)
+    http_mock.should_receive(:verify_mode=).with(anything)
+    http_mock.should_receive(:request_post).with(anything, anything, anything).and_return(res_mock)
+
+    Net::HTTP.should_receive(:new).and_return(http_mock)
+
+    http = SmugMug::HTTP.new(:api_key => "1234-api", :oauth_secret => "4321-secret", :user => {:token => "abcd-token", :secret => "abcd-secret"})
+
+    data = http.request("users.getInfo", {})
+    data.should be_a_kind_of(Hash)
+    data["User"].should == JSON.parse(SmugMugResponses::SUCCESS)["User"]
+  end
+
+  it "handles response errors" do
+    http = SmugMug::HTTP.new(:api_key => "1234-api", :oauth_secret => "4321-secret", :user => {:token => "abcd-token", :secret => "abcd-secret"})
+
+    mock_response(SmugMugResponses::ERROR % 99)
+    lambda { http.request("users.getInfo", {}) }.should raise_error(SmugMug::ReadonlyMode)
+
+    mock_response(SmugMugResponses::ERROR % 30)
+    lambda { http.request("users.getInfo", {}) }.should raise_error(SmugMug::OAuthError)
+
+    mock_response(SmugMugResponses::ERROR % 1)
+    lambda { http.request("users.getInfo", {}) }.should raise_error(SmugMug::RequestError)
+  end
+
   it "handles HTTP errors" do
     res_mock = mock("Response")
     res_mock.stub(:code).and_return("404")

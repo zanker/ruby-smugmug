@@ -2,6 +2,7 @@ require "cgi"
 require "openssl"
 require "base64"
 require "net/http"
+require "json"
 
 module SmugMug
   class HTTP
@@ -101,7 +102,6 @@ module SmugMug
       args["oauth_signature_method"] = "HMAC-SHA1"
       args["oauth_timestamp"] = Time.now.utc.to_i
       args["oauth_token"] = @config[:user][:token]
-
 
       # Sort the params
       sorted_args = []
