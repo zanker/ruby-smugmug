@@ -3,6 +3,25 @@ require "spec_helper"
 describe SmugMug::HTTP do
   include Support::ResponseMock
 
+  it "uploads a file" do
+    res_mock = mock("Response")
+    res_mock.stub(:body).and_return(SmugMugResponses::FILE_SUCCESS)
+    res_mock.stub(:code).and_return("200")
+    res_mock.stub(:message).and_return("OK")
+    res_mock.stub(:header).and_return({})
+
+    http_mock = mock("HTTP")
+    http_mock.should_receive(:request_post).with("/", "foo bar", hash_including("Content-Length" => "7", "Content-MD5" => "327b6f07435811239bc47e1544353273", "X-Smug-FileName" => "image.jpg", "X-Smug-AlbumID" => "1234", "Authorization" => "OAuth oauth_consumer_key=\"consumer\", oauth_nonce=\"nonce\", oauth_signature_method=\"sig-method\", oauth_signature=\"sig\", oauth_timestamp=\"1234\", oauth_version=\"1.0\", oauth_token=\"token\"")).and_return(res_mock)
+
+    Net::HTTP.should_receive(:new).and_return(http_mock)
+
+    http = SmugMug::HTTP.new(:api_key => "1234-api", :oauth_secret => "4321-secret", :user => {:token => "abcd-token", :secret => "abcd-secret"})
+    http.should_receive(:sign_request).with("POST", SmugMug::HTTP::UPLOAD_URI, nil).and_return({"oauth_consumer_key" => "consumer", "oauth_nonce" => "nonce", "oauth_signature_method" => "sig-method", "oauth_signature" => "sig", "oauth_timestamp" => "1234", "oauth_version" => "1.0", "oauth_token" => "token"})
+
+    data = http.request(:uploading, {:FileName => "image.jpg", :content => "foo bar", :AlbumID => 1234})
+    data.should == JSON.parse(SmugMugResponses::FILE_SUCCESS)["Image"]
+  end
+
   it "unzips gzipped responses" do
     mock_response(SmugMugResponses::SUCCESS)
 

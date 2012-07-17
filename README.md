@@ -10,7 +10,7 @@ Tested against Ruby 1.8.7, 1.9.2, 2.0.0 and JRuby, build history is available [h
 
 Examples
 -
-This is just a thin wrapper around the [SmugMug 1.3.0 API](http://wiki.smugmug.net/display/API/API+1.3.0), it's a 1:1 wrapper, so all of the documentation on the SmugMug page applies to this library.
+This is just a thin wrapper around the [SmugMug 1.3.0 API](http://wiki.smugmug.net/display/API/API+1.3.0), it's a 1:1 wrapper, so all of the documentation on the SmugMug page applies to this library. You can use any arguments that the SmugMug 1.3.0 documentation shows under the OAuth option.
 
     client = SmugMug::Client.new(:api_key => "1234-api", :oauth_secret => "4321-secret", :user => {:token => "abcd-token", :secret => "abcd-secret"})
 
@@ -20,8 +20,12 @@ This is just a thin wrapper around the [SmugMug 1.3.0 API](http://wiki.smugmug.n
     data = client.styles.getTemplates
     puts data # [{"id"=>0, "Name"=>"Viewer Controlled"}, {"id"=>3, "Name"=>"SmugMug"}, {"id"=>4, "Name"=>"Traditional"}, {"id"=>7, "Name"=>"All Thumbs"}, {"id"=>8, "Name"=>"Slideshow"}, {"id"=>9, "Name"=>"Journal (Old)"}, {"id"=>10, "Name"=>"SmugMug Small"}, {"id"=>11, "Name"=>"Filmstrip"}, {"id"=>12, "Name"=>"Critique"}, {"id"=>16, "Name"=>"Journal"}, {"id"=>17, "Name"=>"Thumbnails"}]
 
-You can use any arguments that the SmugMug 1.3.0 documentation shows under the OAuth option.
 
+Because uploading is a special case and not under the same group of APIs, it's called slightly differently. See http://wiki.smugmug.net/display/API/Uploading for more information or the documentation linked below for a list of arguments.
+
+    client = SmugMug::Client.new(:api_key => "1234-api", :oauth_secret => "4321-secret", :user => {:token => "abcd-token", :secret => "abcd-secret"})
+    data = client.upload_media(:file => File.new("/Users/foobar/Desktop/image.jpeg", :AlbumID => 51343)
+    puts data # {"id"=>1970029991, "Key"=>"rnSfAak", "URL"=>"http://foobar.smugmug.com/Other/Foo/51343_k8W1aR#1970029991_rnSfAak"}
 
 
 Documentation

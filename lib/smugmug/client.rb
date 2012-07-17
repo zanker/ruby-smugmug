@@ -25,6 +25,52 @@ module SmugMug
       @http = HTTP.new(args)
     end
 
+    ##
+    # Uploading media files to SmugMug, see http://wiki.smugmug.net/display/API/Uploading for more information
+    # @param [Hash] args
+    # @option args [File] :file File or stream that can have the content read to upload
+    # @option args [String] :file Binary contents of the file to upload
+    # @option args [String] :FileName What the file name is, only required when passing :file as a string
+    # @option args [Integer] :AlbumID SmugMug Album ID to upload the media to
+    # @option args [Integer, Optional] :ImageID Image ID to replace if reuploading media rather than adding new
+    # @option args [String, Optional] :Caption The caption for the media
+    # @option args [Boolean, Optional] :Hidden Whether the media should be visible
+    # @option args [String, Optional] :Keywords Keywords to tag the media as
+    # @option args [Integer, Optional] :Altitude Altitude the media was taken at
+    # @option args [Float, Optional] :Latitude Latitude the media was taken at
+    # @option args [Float, Optional] :Longitude Latitude the media was taken at
+    #
+    # @raise [SmugMug::OAuthError]
+    # @raise [SmugMug::HTTPError]
+    # @raise [SmugMug::RequestError]
+    # @raise [SmugMug::ReadonlyModeError]
+    # @raise [SmugMug::UnknownAPIError]
+    def upload_media(args)
+      raise ArgumentError, "File is required" unless args.has_key?(:file)
+      raise ArgumentError, "AlbumID is required" unless args.has_key?(:AlbumID)
+
+      if args[:file].is_a?(String)
+        args[:FileName] ||= File.basename(args[:file])
+        args[:content] = File.read(args[:file])
+      elsif args[:file].is_a?(File)
+        args[:FileName] ||= File.basename(args[:file].path)
+        args[:content] = args[:file].read
+      else
+        raise ArgumentError, "File must be a String or File"
+      end
+
+      args.delete(:file)
+      @http.request(:uploading, args)
+    end
+
+    ##
+    # Direct mapping of SmugMug 1.3.0 API, either see http://wiki.smugmug.net/display/API/API+1.3.0 or the README for examples
+    #
+    # @raise [SmugMug::OAuthError]
+    # @raise [SmugMug::HTTPError]
+    # @raise [SmugMug::RequestError]
+    # @raise [SmugMug::ReadonlyModeError]
+    # @raise [SmugMug::UnknownAPIError]
     def method_missing(method, *args)
       api_cat = method.to_s
       return super unless SmugMug::API_METHODS[api_cat]
