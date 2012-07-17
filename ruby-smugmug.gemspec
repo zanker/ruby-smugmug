@@ -18,6 +18,6 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "rspec", "~>2.8.0"
 
-  s.files        = Dir.glob("lib/**/*") + %w[LICENSE README.md CHANGELOG.md Rakefile]
+  s.files        = Dir.glob("lib/**/*") + %w[LICENSE README.md Rakefile]
   s.require_path = "lib"
 end
