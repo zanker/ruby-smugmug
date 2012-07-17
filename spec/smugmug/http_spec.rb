@@ -9,8 +9,7 @@ describe SmugMug::HTTP do
     http = SmugMug::HTTP.new(:api_key => "1234-api", :oauth_secret => "4321-secret", :user => {:token => "abcd-token", :secret => "abcd-secret"})
 
     data = http.request("users.getInfo", {})
-    data.should be_a_kind_of(Hash)
-    data["User"].should == JSON.parse(SmugMugResponses::SUCCESS)["User"]
+    data.should == JSON.parse(SmugMugResponses::SUCCESS)["User"]
   end
 
   it "unzips gzipped responses" do
@@ -35,15 +34,14 @@ describe SmugMug::HTTP do
     http = SmugMug::HTTP.new(:api_key => "1234-api", :oauth_secret => "4321-secret", :user => {:token => "abcd-token", :secret => "abcd-secret"})
 
     data = http.request("users.getInfo", {})
-    data.should be_a_kind_of(Hash)
-    data["User"].should == JSON.parse(SmugMugResponses::SUCCESS)["User"]
+    data.should == JSON.parse(SmugMugResponses::SUCCESS)["User"]
   end
 
   it "handles response errors" do
     http = SmugMug::HTTP.new(:api_key => "1234-api", :oauth_secret => "4321-secret", :user => {:token => "abcd-token", :secret => "abcd-secret"})
 
     mock_response(SmugMugResponses::ERROR % 99)
-    lambda { http.request("users.getInfo", {}) }.should raise_error(SmugMug::ReadonlyMode)
+    lambda { http.request("users.getInfo", {}) }.should raise_error(SmugMug::ReadonlyModeError)
 
     mock_response(SmugMugResponses::ERROR % 30)
     lambda { http.request("users.getInfo", {}) }.should raise_error(SmugMug::OAuthError)

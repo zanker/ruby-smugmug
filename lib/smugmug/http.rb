@@ -48,7 +48,9 @@ module SmugMug
       postdata = self.sign_request("POST", API_URI, args)
 
       response = http.request_post(API_URI.request_uri, postdata, @headers)
-      if response.code != "200"
+      if response.code == "204"
+        return nil
+      elsif response.code != "200"
         raise SmugMug::HTTPError.new("HTTP #{response.code}, #{response.message}", response.code, response.message)
       end
 
@@ -63,21 +65,28 @@ module SmugMug
         body = response.body
       end
 
-      body = JSON.parse(body)
+      data = JSON.parse(body)
 
-      if body["stat"] == "fail"
+      if data["stat"] == "fail"
         # Special casing for SmugMug being in Read only mode
-        if body["code"] == 99
-          raise SmugMug::ReadonlyMode.new("SmugMug is currently in read only mode, try again later")
+        if data["code"] == 99
+          raise SmugMug::ReadonlyModeError.new("SmugMug is currently in read only mode, try again later")
         end
 
-        klass = OAUTH_ERRORS[body["code"]] ? SmugMug::OAuthError : SmugMug::RequestError
-        raise klass.new("Error ##{body["code"]}, #{body["message"]}", body["code"], body["message"])
+        klass = OAUTH_ERRORS[data["code"]] ? SmugMug::OAuthError : SmugMug::RequestError
+        raise klass.new("Error ##{data["code"]}, #{data["message"]}", data["code"], data["message"])
       end
 
-      body.delete("stat")
-      body.delete("method")
-      body
+      data.delete("stat")
+      data.delete("method")
+
+      # smugmug.albums.changeSettings at the least doesn't return any data
+      return nil if data.length == 0
+
+      # It seems all smugmug APIs only return one hash of data, so this should be fine and not cause issues
+      data.each do |_, value|
+        return value
+      end
     end
 
     ##

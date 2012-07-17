@@ -1,6 +1,5 @@
 module SmugMug
   class Client
-
     ##
     # Creates a new client instance that can be used to access the SMugMug API
     # @param [Hash] args
@@ -24,6 +23,17 @@ module SmugMug
       raise ArgumentError, "Users OAuth secret token required" unless args[:user][:secret]
 
       @http = HTTP.new(args)
+    end
+
+    def method_missing(method, *args)
+      api_cat = method.to_s
+      return super unless SmugMug::API_METHODS[api_cat]
+
+      if klass = self.instance_variable_get("@#{api_cat}_wrapper")
+        klass
+      else
+        self.instance_variable_set("@#{api_cat}_wrapper", SmugMug::ApiCategory.new(@http, api_cat))
+      end
     end
   end
 end

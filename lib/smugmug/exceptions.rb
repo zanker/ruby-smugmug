@@ -31,6 +31,11 @@ module SmugMug
 
   ##
   # SmugMug is in read-only mode
-  class ReadonlyMode < StandardError
+  class ReadonlyModeError < StandardError
+  end
+
+  ##
+  # Trying to call an API that doesn't exist
+  class UnknownAPIError < StandardError
   end
 end
