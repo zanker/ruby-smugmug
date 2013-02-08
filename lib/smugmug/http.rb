@@ -25,13 +25,19 @@ module SmugMug
       else
         @headers["User-Agent"] = "Ruby-SmugMug v#{SmugMug::VERSION}"
       end
+
+      args[:http] = args.fetch(:http,{})  #checks for the existance of :http, sets to nill if does not exist.
+      @http_proxy_host = args[:http].fetch(:proxy_host,nil)
+      @http_proxy_port = args[:http].fetch(:proxy_port,nil)
+      @http_proxy_user = args[:http].fetch(:proxy_user,nil)
+      @http_proxy_pass = args[:http].fetch(:proxy_pass,nil)
     end
 
     def request(api, args)
       uri = api == :uploading ? UPLOAD_URI : API_URI
       args[:method] = "smugmug.#{api}" unless api == :uploading
 
-      http = ::Net::HTTP.new(uri.host, uri.port)
+      http = ::Net::HTTP.new(uri.host, uri.port, @http_proxy_host, @http_proxy_port, @http_proxy_user, @http_proxy_pass)
       http.set_debug_output(@config[:debug_output]) if @config[:debug_output]
 
       # Configure HTTPS if needed
