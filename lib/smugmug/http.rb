@@ -17,7 +17,7 @@ module SmugMug
     #
     def initialize(args)
       @config = args
-      @digest = OpenSSL::Digest::Digest.new("SHA1")
+      @digest = OpenSSL::Digest.new("SHA1")
 
       @headers = {"Accept-Encoding" => "gzip"}
       if args[:user_agent]
