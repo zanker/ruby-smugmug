@@ -1,4 +1,3 @@
-require "cgi"
 require "openssl"
 require "base64"
 require "net/http"
@@ -152,10 +151,10 @@ module SmugMug
       postdata = sorted_args.join("&")
 
       # Final string to hash
-      sig_base = "#{method}&#{CGI::escape("#{uri.scheme}://#{uri.host}#{uri.path}")}&#{CGI::escape(postdata)}"
+      sig_base = "#{method}&#{URI::escape("#{uri.scheme}://#{uri.host}#{uri.path}", uri_escape_regex)}&#{URI::escape(postdata, uri_escape_regex)}"
 
       signature = OpenSSL::HMAC.digest(@digest, "#{@config[:oauth_secret]}&#{@config[:user][:secret]}", sig_base)
-      signature = CGI::escape(Base64.encode64(signature).chomp)
+      signature = URI::escape(Base64.encode64(signature).chomp, uri_escape_regex)
 
       if uri == API_URI
         "#{postdata}&oauth_signature=#{signature}"
