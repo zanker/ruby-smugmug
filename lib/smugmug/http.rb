@@ -141,7 +141,7 @@ module SmugMug
       args["oauth_timestamp"] = Time.now.utc.to_i
       args["oauth_token"] = @config[:user][:token]
 
-      uri_escape_regex = Regexp.new("[^#{URI::REGEXP::PATTERN::UNRESERVED}]", false, 'N'))
+      uri_escape_regex = Regexp.new("[^#{URI::REGEXP::PATTERN::UNRESERVED}]", false, 'N')
 
       # Sort the params
       sorted_args = []
