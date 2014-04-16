@@ -141,10 +141,12 @@ module SmugMug
       args["oauth_timestamp"] = Time.now.utc.to_i
       args["oauth_token"] = @config[:user][:token]
 
+      uri_escape_regex = Regexp.new("[^#{URI::REGEXP::PATTERN::UNRESERVED}]", false, 'N'))
+
       # Sort the params
       sorted_args = []
       args.sort.each do |key, value|
-        sorted_args.push("#{key.to_s}=#{CGI::escape(value.to_s)}")
+        sorted_args.push("#{key.to_s}=#{URI::escape(value.to_s, uri_escape_regex)}")
       end
 
       postdata = sorted_args.join("&")
