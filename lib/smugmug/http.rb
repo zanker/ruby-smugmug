@@ -1,4 +1,3 @@
-require "cgi"
 require "openssl"
 require "base64"
 require "net/http"
@@ -17,7 +16,7 @@ module SmugMug
     #
     def initialize(args)
       @config = args
-      @digest = OpenSSL::Digest::Digest.new("SHA1")
+      @digest = OpenSSL::Digest.new("SHA1")
 
       @headers = {"Accept-Encoding" => "gzip"}
       if args[:user_agent]
@@ -141,19 +140,21 @@ module SmugMug
       args["oauth_timestamp"] = Time.now.utc.to_i
       args["oauth_token"] = @config[:user][:token]
 
+      uri_escape_regex = Regexp.new("[^#{URI::REGEXP::PATTERN::UNRESERVED}]", false, 'N')
+
       # Sort the params
       sorted_args = []
       args.sort.each do |key, value|
-        sorted_args.push("#{key.to_s}=#{CGI::escape(value.to_s)}")
+        sorted_args.push("#{key.to_s}=#{URI::escape(value.to_s, uri_escape_regex)}")
       end
 
       postdata = sorted_args.join("&")
 
       # Final string to hash
-      sig_base = "#{method}&#{CGI::escape("#{uri.scheme}://#{uri.host}#{uri.path}")}&#{CGI::escape(postdata)}"
+      sig_base = "#{method}&#{URI::escape("#{uri.scheme}://#{uri.host}#{uri.path}", uri_escape_regex)}&#{URI::escape(postdata, uri_escape_regex)}"
 
       signature = OpenSSL::HMAC.digest(@digest, "#{@config[:oauth_secret]}&#{@config[:user][:secret]}", sig_base)
-      signature = CGI::escape(Base64.encode64(signature).chomp)
+      signature = URI::escape(Base64.encode64(signature).chomp, uri_escape_regex)
 
       if uri == API_URI
         "#{postdata}&oauth_signature=#{signature}"
