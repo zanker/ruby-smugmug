@@ -146,7 +146,7 @@ module SmugMug
       #     reserved characters used for their reserved purposes may be used
       #     unencoded within a URL.
       #
-      # However, if we don't escape commas, apostrophes and parentheses the SmugMug API fails
+      # However, if we don't escape apostrophes and parentheses the SmugMug API fails
       # with an invalid signature error:
       #
       #     Error #35, invalid signature (SmugMug::OAuthError)
@@ -158,8 +158,7 @@ module SmugMug
       # Sort the params
       sorted_args = []
       args.sort.each do |key, value|
-        val = URI::escape(value.to_s, unsafe)
-        sorted_args.push("#{key.to_s}=#{val}")
+        sorted_args.push("#{key.to_s}=#{URI::escape(value.to_s, unsafe)}")
       end
 
       postdata = sorted_args.join("&")
