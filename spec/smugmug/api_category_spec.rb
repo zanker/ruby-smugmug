@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe SmugMug::ApiCategory do
   it "dispatches an API request" do
-    http_mock = mock("HTTP")
+    http_mock = double("HTTP")
     http_mock.should_receive(:request).with("users.getStats", {:Month => 2, :Year => 2012}).and_return("Foo Bar")
 
     wrapper = SmugMug::ApiCategory.new(http_mock, "users")

@@ -21,13 +21,13 @@ describe SmugMug::Client do
   end
 
   it "prepares a File file for upload" do
-    file = mock("File")
+    file = double("File")
     file.should_receive(:is_a?).with(String).and_return(false)
     file.should_receive(:is_a?).with(File).and_return(true)
     file.should_receive(:path).and_return("/Users/foobar/Desktop/image.jpg")
     file.should_receive(:read).and_return("foo bar")
 
-    http = mock("HTTP")
+    http = double("HTTP")
     http.should_receive(:request).with(:uploading, {:content => "foo bar", :FileName => "image.jpg", :AlbumID => 1234})
     @client.instance_variable_set(:@http, http)
 
@@ -37,7 +37,7 @@ describe SmugMug::Client do
   it "prepares a String file for upload" do
     File.should_receive(:read).with("/Users/foobar/Desktop/image.jpg").and_return("foo bar")
 
-    http = mock("HTTP")
+    http = double("HTTP")
     http.should_receive(:request).with(:uploading, {:content => "foo bar", :FileName => "image.jpg", :AlbumID => 1234})
     @client.instance_variable_set(:@http, http)
 
