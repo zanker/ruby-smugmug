@@ -4,13 +4,13 @@ describe SmugMug::HTTP do
   include Support::ResponseMock
 
   it "uploads a file" do
-    res_mock = mock("Response")
+    res_mock = double("Response")
     res_mock.stub(:body).and_return(SmugMugResponses::FILE_SUCCESS)
     res_mock.stub(:code).and_return("200")
     res_mock.stub(:message).and_return("OK")
     res_mock.stub(:header).and_return({})
 
-    http_mock = mock("HTTP")
+    http_mock = double("HTTP")
     http_mock.should_receive(:request_post).with("/", "foo bar", hash_including("Content-Length" => "7", "Content-MD5" => "327b6f07435811239bc47e1544353273", "X-Smug-FileName" => "image.jpg", "X-Smug-AlbumID" => "1234", "Authorization" => "OAuth oauth_consumer_key=\"consumer\", oauth_nonce=\"nonce\", oauth_signature_method=\"sig-method\", oauth_signature=\"sig\", oauth_timestamp=\"1234\", oauth_version=\"1.0\", oauth_token=\"token\"")).and_return(res_mock)
 
     Net::HTTP.should_receive(:new).and_return(http_mock)
@@ -37,13 +37,13 @@ describe SmugMug::HTTP do
     gz.write(SmugMugResponses::SUCCESS)
     gz.close
 
-    res_mock = mock("Response")
+    res_mock = double("Response")
     res_mock.stub(:body).and_return(output.string)
     res_mock.stub(:code).and_return("200")
     res_mock.stub(:message).and_return("OK")
     res_mock.stub(:header).and_return({"content-encoding" => "gzip"})
 
-    http_mock = mock("HTTP")
+    http_mock = double("HTTP")
     http_mock.should_receive(:use_ssl=).with(true)
     http_mock.should_receive(:verify_mode=).with(anything)
     http_mock.should_receive(:request_post).with(anything, anything, anything).and_return(res_mock)
@@ -70,12 +70,12 @@ describe SmugMug::HTTP do
   end
 
   it "handles HTTP errors" do
-    res_mock = mock("Response")
+    res_mock = double("Response")
     res_mock.stub(:code).and_return("404")
     res_mock.stub(:message).and_return("Not Found")
     res_mock.stub(:header).and_return({})
 
-    http_mock = mock("HTTP")
+    http_mock = double("HTTP")
     http_mock.should_receive(:use_ssl=).with(true)
     http_mock.should_receive(:verify_mode=).with(anything)
     http_mock.should_receive(:request_post).with(anything, anything, anything).and_return(res_mock)

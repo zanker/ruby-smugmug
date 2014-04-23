@@ -140,21 +140,34 @@ module SmugMug
       args["oauth_timestamp"] = Time.now.utc.to_i
       args["oauth_token"] = @config[:user][:token]
 
-      uri_escape_regex = Regexp.new("[^#{URI::REGEXP::PATTERN::UNRESERVED}]", false, 'N')
+      # RFC 1738 (http://www.ietf.org/rfc/rfc1738.txt) says:
+      #
+      #     Thus, only alphanumerics, the special characters "$-_.+!*'(),", and
+      #     reserved characters used for their reserved purposes may be used
+      #     unencoded within a URL.
+      #
+      # However, if we don't escape apostrophes and parentheses the SmugMug API fails
+      # with an invalid signature error:
+      #
+      #     Error #35, invalid signature (SmugMug::OAuthError)
+      #
+      # To overcome this, define a new unreserved character list and use this in URI::escape
+      unreserved = "\\-_.!~*a-zA-Z\\d"
+      unsafe = Regexp.new("[^#{unreserved}]", false, 'N')
 
       # Sort the params
       sorted_args = []
       args.sort.each do |key, value|
-        sorted_args.push("#{key.to_s}=#{URI::escape(value.to_s, uri_escape_regex)}")
+        sorted_args.push("#{key.to_s}=#{URI::escape(value.to_s, unsafe)}")
       end
 
       postdata = sorted_args.join("&")
 
       # Final string to hash
-      sig_base = "#{method}&#{URI::escape("#{uri.scheme}://#{uri.host}#{uri.path}", uri_escape_regex)}&#{URI::escape(postdata, uri_escape_regex)}"
+      sig_base = "#{method}&#{URI::escape("#{uri.scheme}://#{uri.host}#{uri.path}", unsafe)}&#{URI::escape(postdata, unsafe)}"
 
       signature = OpenSSL::HMAC.digest(@digest, "#{@config[:oauth_secret]}&#{@config[:user][:secret]}", sig_base)
-      signature = URI::escape(Base64.encode64(signature).chomp, uri_escape_regex)
+      signature = URI::escape(Base64.encode64(signature).chomp, unsafe)
 
       if uri == API_URI
         "#{postdata}&oauth_signature=#{signature}"
