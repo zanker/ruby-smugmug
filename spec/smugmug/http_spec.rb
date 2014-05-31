@@ -1,4 +1,5 @@
 require "spec_helper"
+require "zlib"
 
 describe SmugMug::HTTP do
   include Support::ResponseMock
