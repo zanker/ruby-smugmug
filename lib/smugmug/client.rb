@@ -64,6 +64,16 @@ module SmugMug
     end
 
     ##
+    # Sign a url with OAuth tokens. Useful when you e.g. want to sign private photo URLs,
+    # because otherwise you cannot access them in a cookie-less environment
+    # @param [String] method HTTP method that the request is sent as
+    # @param [String] uri Full URL of the request
+    # @param [Hash] form_args Args to be passed to the server, optional
+    def sign_request(method, url, form_args = {})
+      @http.sign_request(method, url, form_args)
+    end
+
+    ##
     # Direct mapping of SmugMug 1.3.0 API, either see http://wiki.smugmug.net/display/API/API+1.3.0 or the README for examples
     #
     # @raise [SmugMug::OAuthError]
