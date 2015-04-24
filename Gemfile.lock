@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    ruby-smugmug (0.0.1)
+    ruby-smugmug (0.0.2)
       json (~> 1.8.2)
 
 GEM
