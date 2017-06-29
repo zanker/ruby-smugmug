@@ -55,7 +55,7 @@ module SmugMug
       # Upload request, which requires special handling
       if api == :uploading
         postdata = args.delete(:content)
-        headers = @headers.merge("Content-Length" => postdata.length.to_s, "Content-MD5" => Digest::MD5.hexdigest(postdata), "X-Smug-Version" => "1.3.0", "X-Smug-ResponseType" => "JSON")
+        headers = @headers.merge("Content-Type" => "application/octet-stream", "Content-Length" => postdata.length.to_s, "Content-MD5" => Digest::MD5.hexdigest(postdata), "X-Smug-Version" => "1.3.0", "X-Smug-ResponseType" => "JSON")
 
         UPLOAD_HEADERS.each do |key|
           next unless args[key] and args[key] != ""
